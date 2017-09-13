@@ -1,0 +1,501 @@
+!This file contains parameters used in program taxhetgr.
+!
+!To run the program with a parameter in folder parameters, use command line
+!argument. Example: taxhetgr baseline.txt (the suffix is not necessary)
+!
+!Lines beginning with '%' or '!' are ignored, trailing comments are also supported.
+!
+!Note on logical variables: they don't need to be in .true./.false. format,
+!other values are supported (1/0, T/F).
+!
+!Note on matrices: row vectors should start on the same line as equality
+!sign. When there are more rows then columns the data should start on the next
+!row. No separators are needed except for spaces.
+!__________________________________________________________________________
+
+!___________Parameters governing what the program should do__________________
+
+!Runtime_limit is the maximum runtime in hours. If stopping rule is not satisfied before
+!the runtime limit is reached the program stops VFI iteration, saves the current value function,
+!and computes and saves simulated series. This is useful particularly on HPC because there
+!are runtime limits. This should always
+!be somewhat lower than the limit on HPC because the last iteration, saving
+!value function, and computing simulated series will take some time.
+runtime_limit = 11.5
+
+!If search_for_bounds == .true., the program will cycle through various
+!possible combinations of bounds for grid and look for such
+!combinations that there is a feasible choice at every point in the grid
+!These combinations will then be saved into a file. The program will then terminate.
+search_for_bounds = .false.
+
+!If sim_only == .true., then we assume that the value function for
+!periods t=1,2,... has been solved, and the program proceeds with solving
+!the problem for period 0 and simulating the series. The program will load
+!a value function even if it comes from a different problem (or the number
+!of grid points is different) using interpolation.
+sim_only = .false.
+input_folder = baseline_16_01_17_170801
+
+!If load_initial_guess == .true., initial guess of value function will be loaded from
+!the folder input_folder. Interpolation is used if the grid in input_folder
+!is different than the grid in the current instance of the programme (for example
+!if the number of grid points is different). If the policy function is present
+!(saved if save_C_pol == .true.), then it is used as initial guess (no interpolation
+!is done, it is assumed that the grid is the same in this case - the reason is that
+!we would either have to do the interpolation on 1 image (slow) or we would have to
+!pass the whole policy function to all images (consumes too much memory)).
+!
+!Also, if we are loading the initial guess we proceed directly into the last
+!stage of CTS algorithm (no coarse grid).
+load_initial_guess = .false.
+
+!If save_C_guess == .true., the initial guess in maximization step in value function is saved
+!every time the value function is saved. This is useful mostly when there is a time limit on a supercomputer
+!which is insufficient to find a sufficiently accurate solution, and we want to continue
+!where we left off (without having to find initial feasible guess which is very time-consuming
+!for large grids, and avoiding some issues cause by non-convexity of feasible set).
+!We need to have set the variable runtime_limit to account for this.
+!
+save_C_guess = .false.
+
+!N_sim is the number of simulated samples which are then used to compute
+!statistics of interest. For every simulation a shock series is drawn and,
+!if perm_eps>0, the initial asset holdings are permutated by random number
+!from interval (b_init - eps, b_init + eps). This allows us to get results
+!robust to initial conditions choice.
+N_sim = 10
+
+!perm_eps is the epsilon in permutation of initial asset holdings in simulations.
+perm_eps = 0.00
+
+!disc_share is the share of discounted observations. These are the observations
+!most extreme with respect to MU-adjusted asset holdings. This should be used for
+!debugging purposes only
+disc_share = 0.05
+
+!__________Parameters related to solution technique___________________
+
+
+!If debugmode == .true., some additional things will be reported/plotted
+debug_mode = .false.
+
+
+!If static_environment == .true., a simpler version of the model is solved, in
+!which the productivities of the agents are fixed at their initial values.
+
+static_environment = .false.
+
+
+!T_sim is the number of periods to be simulated. This includes period 0.
+!for example, if T_sim = 5, periods t = 0,1,2,3,4 will be simulated.
+T_sim = 30
+
+!T_sim_max is the number of period after which growth stops
+!always need to have T_sim <= T_max. 
+
+T_sim_max = 30
+
+!Initial state of random number generator.
+RNG_seed = 0
+
+!______Parameters related to accuracy tests____________________________
+!acc_int is a real number (should be in (0.0,1.0) interval that tells the program
+!what intervals to use for drawing points used in accuracy tests. The intervals 
+!have the same mean as the ones used in solving the problem (a_min,a_max,rho_min,rho_max),
+!and their length is acc_int multiple of the original length.
+!The distribution used to draw sample is multivariate uniform over the reduced length intervals.
+acc_int = 0.0
+
+!acc_samples is the number of samples used to compute the accuracy test statistics
+acc_samples = 1
+
+!acc_method is the method used to compute accuracy tests. 0 corresponds to no accuracy
+!test, 1 to Euler equations residuals (average over the interval).
+acc_method = 1
+
+!acc_attmax1 is the number of random initializations in the accuracy test in first period
+!(should be fairly large), and acc_attmax2 is the number of initializations in period 
+!(this does not need to be as large because period 1 solution should provide a good
+!initial guess). Acc_maxiter is the maximum number of iterations in the optimization
+!subroutine called to find maximum of current + continuation value at a gridpoint.
+!The larger this is the higher the accuracy should be, but the longer it takes to solve.
+acc_attmax1 = 10
+acc_attmax2 = 10
+acc_maxiter = 500
+
+!Other parameters related to accuracy of solution (these might eventually be moved to LFFC section
+!of the parameter file)
+!LFFC_max_att is the maximum number of attempts (at every grid point) in looking for feasible choice.
+!The search algorithm is initialized at a given point in state space and the more times we do it
+!the more likely it is that we find a good initial guess.
+LFFC_attmax = 10
+
+!LFFC_maxiter is the maximum number of iterations in the optimization subroutine used in LFFC.
+LFFC_maxiter = 100
+
+!VFI_opt_maxiter is the maximum number of iterations in the optimization subroutine used at
+!every iteration of VFI algorithm at every gridpoint. This parameter has the potential to
+!increase the accuracy of the solution a lot but also the runtime can be prohibitively
+!high if this is too high.
+VFI_opt_maxiter = 200
+
+!sim_attmax1 is the maximum number of attempts in first period (the number of random initializations).
+!sim_attmax2 is the same for all consecutive periods (this can't be quite so large as the
+!former parameter because the runtime could get too high, particularly if we are trying to do
+!many simulations). sim_maxiter is the maximum number of iterations in the optimization subroutines
+!used in simulation.
+sim_attmax1 = 100
+sim_attmax2 = 20
+sim_maxiter = 200
+
+!opt_subroutine determines which optimization subroutine is used everywhere in the program (LFFC,
+!VFI, accuracy tests, simulation). [Add explanation of meaning of choices later]
+opt_subroutine = 1
+
+!Parameters related to particular optimization subroutines (see documentation of NAG Fortran Library Mark 24
+!for explanation). Parameters with prefix 'sim_' are values used in simulation (in general there we can
+!afford a bit more accuracy/more iterations)
+!1: e04jcf
+rhoend = 0.000001
+sim_rhoend = 0.000001 
+
+!3: e04aba
+e1 = 0.000000001
+e2 = 0.0000000001 
+sim_e1 = 0.000000001
+sim_e2 = 0.0000000001 
+ 
+
+!__________Parameters which appear in the paper (environment)____________
+!The number of players (I) and shock realizations (M) is hardcoded in 
+!module mod_parameters_hard.
+
+!The mass of agents in the population. The mass must sum to 1
+mass = 0.5 0.5
+
+%l_max is the maximum time that each agent can spend working.
+l_max = 3.0 3.0
+
+!Discount factor common to all agents.
+beta = 0.95003
+
+!Reminder: Agents are indexed according to their growth rate of
+!productivity: agent 1 is the agent with highest growth rate, agent 2 is
+!the agent with 2nd-highest-growth rate, etc. This must be respected here
+!(can generalize this later but it's not important).
+
+!theta_0: initial productivities
+!theta_0 = 1.5 1.0
+theta_0 = 3.6 1.0
+
+!xi_theta is the vector of growth rates of productivities (in accordance with notation in the paper)
+xi_theta = 0.0117 0.00
+
+!Trend government expenditure as share of maximum output
+k_gov = 0.058333
+
+!s_t is a Markov chain - multiplicative shock to government expenditure. S
+!denotes the row vector of possible shock realizations and P denotes
+!the transition matrix. It could be obtained as approximation of some AR
+!process, but that is not a part of this program. I just specify the shock
+!process here.
+
+
+!Here are some examples of how the specification would look like
+!1 state (deterministic case) - this should not be required
+!S=1.0
+!P=1.0
+
+S = 0.95 1.05
+P = 
+0.5 0.5 
+0.5 0.5
+
+!S = 0.9 1.0 1.1
+!P = 
+!0.4 0.3 0.3
+!0.3 0.4 0.3
+!0.3 0.3 0.4
+
+!Initial shock realization index
+s_init_index = -1
+
+!borrowing limits for the agents (exogenous).
+b_min = -1.0 -1.0
+b_max = 5.0 5.0
+
+!The following parameters determine the government's borrowing constraint
+!(if the government can borrow, it is negative).
+B_min_kappa = 5.0
+
+!This is used in the formula 
+!B_min = B_min_kappa * (b_min(1) + b_min(2)), where b_min have been
+!transformed into borrowing constraints in levels (not relative to
+!productivity). This makes sense only if (b_min(1) + b_min(2)) < 0.
+!Otherwise the following constant B_min_number is used. This constant is
+!also used if B_min_constant = 1;
+
+B_min_number = -10.0 %(in levels - should be negative if the government can borrow)
+B_min_constant = .false. %binary variable, if this is .true. then a constant B_min_number is used for B_min.
+
+!b_init = 0.1*ones(1,I);
+!b_init are initial asset holdings as ratio of initial productivity,
+!so that this is consistent with the state variables used in the recursive
+!formulation.
+b_init = 0.0 0.0
+
+!Pareto weights
+alpha = 1.0 1.0
+
+!_________Utility function parameters_____________________________
+!So far only one functional form is supported (logarithmic in consumption,
+!CRRA in labour). The utility funtion itself and all functions that
+!are implementations of formulae which depend on the functional form
+!are in a module mod_utility. When functional form is switched, we 
+!replace the module. This way is computationally efficient (don't have
+!to branch the program so much) and easy to implement.
+!
+!Values of parameters which govern the utility function are given here:
+
+gamma_par = 2.0
+A_par = 1.0
+B_par = 2.9155
+
+!___________Parameters governing VFI details_____________________
+
+
+
+!The following parameters determine the stopping rule (for value function
+!iteration).
+stopping_rule_quantile = 1.0
+stopping_rule_threshold = 0.00001
+
+VFI_glob_opt_iter = 0 !This thing is problematic because of bad initialization...
+!A global optimization subroutine will be used for the first VFI_glob_opt_iter
+!times. Afterwards, local optimization subroutines will be used.
+!This should be at least one, because in the first
+!iteration, we probably do not have a good initial guess,
+!and due to non-convexity of the problem, using a local optimization method
+!can yield a very bad solution (if we start in the wrong part of
+!the feasible set). This should not be too high, however, as the global
+!optimization methods are very slow and local optimization methods
+!usually yield a better solution anyway (if we start close to the optimum
+!which we hopefully do in later VFI iterations)
+
+!VFI_max_iterations is the maximum number of iterations which will be
+!performed in value function iteration. If we are using Howard's acceleration
+!algorithm, this is ignored, and instead we use only the runtime limit.
+!The reason is that if sometimes skip a lot of maximization steps, it is then
+!quite impossible to estimate how long it will take to reach a given number
+!of iterations.
+VFI_max_iter = 1
+
+!save_iter_multiple: The value function is saved every time the iteration number
+!of VFI algorithm is a multiple of this number. If this is zero, the value function is
+!never saved. It usually makes sense to set this to a really large number in which case
+!the value function is saved only at the end (after convergence criteria have been
+!satisfied or if runtime runs out).
+!
+!If this is not zero, the policy function will also be saved at the same time (so we
+!can resume VFI without looking for initial guess again, which takes a lot of time on
+!large grids, and also leads to possible issues due to non-convexity of feasible set,
+!so that we may have issues with convergence). If Howard algorithm is used, then
+!The value and policy functions are saved only at the last iteration.
+save_iter_multiple = 10000000
+
+
+!The following parameter is deprecated (remove in a future version)
+assume_interior_optimality = .false.
+
+!_____Parameters governing looking for feasible choice (LFFC)______________
+!These parameters are used wherever we look for a feasible choice, be it in 
+!looking for feasible choice for a given grid, or in looking for a feasible grid.
+!LFFC_min_share,LFFC_max_share are the minimum and maximum share of maximum feasible
+!consumption which are used in the search. Particularly where l_max is large and
+!almost never binding, it makes sense to restrict the maixmum share to something
+!substantially lower than 1, as it increases the chance of finding feasible choices.
+LFFC_min_share = 0.01
+LFFC_max_share = 0.99
+
+!LFFC_max_ind is the maximum index in search for feasible choice for every variable.
+!In the case of M=1, this will be the actual number of choices tried. In case M>1,
+!it would be LFFC_max_share**(2M-1), but the actual number is lower because the
+!choices where share of consumption in a state sums to more than 1 is ruled out
+!at an early stage of the algorithm. The state M consumption of agent I is treated
+!separately. The higher this variable the better chance of finding feasible choices
+!but it should be noted that this adds a lot of loops quite deep in the program so
+!we can't raise this too high.
+LFFC_max_ind = 30
+
+!If interior_solution_only is .true., then (at every grid point) in the
+!maximization procedure, we only consider points for which none of the
+!borrowing constraints binds. This speeds up the computation but we could
+!get a slightly wrong solution. This is not recommended - it could lead to
+!a situation in which we have no feasible choices at the grid points (once
+!we exclude this). It is preferable to use assume_interior_optimality = 1,
+!which speeds up the computation less, but if a feasible choice in interior
+!solutions is not found, it stills looks for feasible choice in corner
+!solutions.
+interior_solution_only = .true.
+
+!If one_fc_suff is .true., then once the algorithm finds a feasible choice for
+!any value of what_binds (starting with no constraints binding), it will stop
+!looking for other feasible choices. This will speed up computation massively and
+!hopefully it should affect the results less than interior_solution_only.
+one_fc_suff = .true.
+
+!_____Coarse to Smooth acceleration algorithm (CTS algorithm)______________
+
+!If CTS_split_times = k, number of all the gridpoints given in parameter
+!file is divided by two k times, and the value function iteration (VFI) is
+!performed on this coarse grid. Then a smoother grid is constructed, in
+!which the number of grid points is (1/2)^(k-1), and the value function is
+!solved on this smoother grid, using the value function obtained on the
+!coarser grid as initial guess. This is done until we get to a grid which
+!has the number of grid points as given in the parameter file. For example,
+!if CTS_split_times = 1, we split the grid once, and if CTS_split_times =
+!0, no CTS acceleration happens and VFI is solved on the grid defined by
+!parameters in this file.
+CTS_split_times = 0
+
+
+!The number of grid points for a variable can never be lower than
+!CTS_gridpoints_floor. If the value of CTS_VFI_times implies that this would
+!happen, the number of grid points for the variable in question is set to
+!CTS_gridpoints_floor. The motivation is that if we have less than this,
+!the resulting approximation is probably quite useless as initial guess in
+!the following steps of CTS algorithm). This floor is particularly useful
+!when we have substantially different number of grid points for different
+!state variables.
+CTS_gridpoints_floor = 5
+
+CTS_C_interp = .true.
+!If CTS_C_interp = .true., then the policy function obtained in the previous
+!stage of CTS algorithm is used (by interpolation) to get an initial guess
+!of consumption in the maximization at all grid points (in first iteration
+!of VFI algoritm). .true. is the recommended option because it saves time
+!and helps stability. 
+
+!_____Parameters governing grid_________________________________________
+N_a = 10
+%N_a is the number of gridpoints to be used for (utility adjusted) asset
+%holdings. I use the same number of gridpoints for all agents, it would be
+%quite inconvenient to generalize this, and nto much would be gained.
+
+N_rho = 10
+%N_rho is the number of gridpoints for the variable rho, which is the state
+%variable - ratio of last-period marginal utilities. It is used only when I
+%=2
+%rho_min and rho_max are boundaries for the gridpoint for rho. The
+%appropriateness depends on utility functions, productivities, etc.egative.
+rho_min = 0.18 %0 should be avoided, could lead to errors
+rho_max = 0.3
+
+
+N_t = 10
+%N_t is the number of gridpoints for the state space of the 'time' variable
+%which governs the deterministic components of time trends
+%(such as productivities).
+
+
+a_min = -5.0 -5.0
+a_max = 5.0 5.0
+
+
+
+VFI_interpolation_mode = 1
+!VFI_interpolation mode is the mode of interpolation used for evaluating
+!value function off the grid. It is an integer where various values
+!correspond to certain modes of interpolaton.
+!
+!1 linear interpolation
+!2,3,... so far not implmeneted (will have nearest neighbour and spline?)
+
+
+
+!_____Searching for bounds________________________________________________
+!If search_for_bounds == .true., the program will search
+!for bounds a_min,a_max,rho_min,rho_max, such that there is
+!a feasible point at every grid point. Feasibility in this sense
+!contains the constraints on next-period 'artificial' state variables 
+!being in the grid.
+
+
+!The bounds rho_min and rho_max during the search are such that
+!rho_search_mid is the midpoint of the interval for rho. The grid is
+!gradually resized (from smallest to largest). rho_search_max_diff is the
+!maximum difference between a corner of the interval and the mid point
+!rho_search_mid (so that the maximum length of the interval is
+!2*rho_search_max_diff).
+!rho must be positive. rho_search floor is the lowest rho_min used in
+!finding the feasible solution.
+
+rho_search_mid = 0.9
+rho_search_max_diff = 0.4
+rho_search_floor = 0.01
+
+
+!a_search min and a_search max are the widest grids a_min and a_max used in
+!the search algorithm. The algorithm starts in the middle and gradually
+!increases the size of these grids until these bounds are reached in
+!N_search_a steps.
+a_search_min = -5.0 -5.0
+a_search_max = 5.0 5.0
+
+
+!If search_cycle_over_both = .true., then there are two separate cycles (grid
+!for a1, and grid for a2). If this is .false., there is only one cycle (the
+!size of both grids increasing simultaneously). This reduces runtime
+!substantially but we may not find some feasible grids - if finding feasible
+!grids proves to be a significant problem later on, I should generalize this.
+!search_cycle_over_both = .false.
+
+
+!Number of points for each of the variables to perform the search.
+N_search_a = 10
+N_search_rho = 20
+
+
+!If check_corners_only = .true, then for the purpose of checking feasibility, the number of
+!all grid points will be limited to 2. This effectively means that only
+!corner values will be checked. This speeds up the computation massively
+!but sometimes, there could be violations 'close to the corner' even if
+!there are no violations at the corner. More often than not, it seems
+!That if feasibility is not an issue at the corner of the grid, it is also
+!not a problem at other points (corners of the grid are in a sense extreme).
+check_corners_only = .true.
+
+!If stop_when_found == .true., the program stops once a feasible grid
+!was found. ('Feasible grid' is explained in the appendix - it is simply a grid
+!on which we always have a feasible choice, i.e., a choice s.t. the next-period
+!points lie in the grid).
+stop_when_found = .false.
+
+!___________________________________________________
+!The following parameters govern Howard acceleration algorithm.
+!The algorithm works as follows. First a criterion is chosen (depending on crit_How).
+!This could be for example the maximum absolute relative deviation in Value function (b/w iterations).
+!Then, if this criterion is lower than any of elements of a_How, we find the lowest of these
+!elements for which criterion is lower (call it i), and then a correspondinng b_How. The maximization step
+!is then skipped b_How(i) times. If the criterion is lower than a threshold c_How, then no more skipping
+!will be performed.
+!This setup allows us to skip more maximization in later stages of the algorithm when the changes
+!in policy (and V function) should be lower. Then, once criterion is really low, we no longer do these changes to
+!avoid overshooting, and hopefully facilitate convergence.
+!
+!The dimension of a_How and b_How is hardcoded in mod_parameters_hard.
+
+crit_How = 0 !1 works fine in deterministic case. In stochastic rather try 2.
+
+!(1 corresponds to maximum absolute relative deviation in V (MARD), 2 to average relative deviation in V (AARD),
+!3 to MARD in policy function, 4 to AARD in policy function. Value crit_How = 0 means that Howard
+!acceleration algorithm is not used.
+
+!Should have a_How in descending order, b_How in ascending (not necessarily but it makes most sense
+!and the algorithm is implemented under this assumption)
+a_How = 0.5 0.1 0.05
+b_How = 10 20 10
+c_How = 0.0001
+
+!End of parameter file (this should be kept here to avoid potential eof problems)
