@@ -6,7 +6,7 @@ trends and optimal fiscal policy)
 Folder taxhetgrtr contains the program for solving the model of Chapter 3 (Heterogeneous labour productivity
 trends and optimal fiscal policy with transfers)
 
-Folder union contains the program for solving the model of Chapter 4 (Multi-country optimal fiscal policy)
+Folder union contains the program for solving the model of Chapter 4 (Open economy optimal fiscal policy)
 
 Each of the three folders contains a folder 'parameters', in which there is a sample parameter file (baseline.txt),
 which contains all relevant parameters. The name of the parameter file can be passed to the program via a command line
