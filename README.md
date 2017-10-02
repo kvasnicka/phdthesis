@@ -3,6 +3,8 @@ This repository contains the programs for solving the models in my PhD thesis
 Folder taxhetgr contains the program for solving the model of Chapter 2 (Heterogeneous labour productivity
 trends and optimal fiscal policy)
 
+Folder taxhetgrreg contains the program for solving the model of Chapter 2 using fitted value function iteration, in which the value function is approximated as a linear combination of basis functions (the suffix 'reg' stands for regression, since a linear approximation architecture is used, as discussed in the text)
+
 Folder taxhetgrtr contains the program for solving the model of Chapter 3 (Heterogeneous labour productivity
 trends and optimal fiscal policy with transfers)
 
